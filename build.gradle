@@ -10,7 +10,6 @@ allprojects {
         mavenLocal()
         mavenCentral()
     }
-    def guavaVersion = "31.1-jre"
     apply plugin: "io.spring.dependency-management"
     dependencyManagement {
         dependencies {
@@ -19,7 +18,6 @@ allprojects {
                 mavenBom "org.testcontainers:testcontainers-bom:1.17.6"
                 mavenBom "com.google.protobuf:protobuf-bom:3.21.12"
             }
-            dependency "com.google.guava:guava:$guavaVersion"
         }
     }
 }
