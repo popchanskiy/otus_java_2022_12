@@ -2,7 +2,7 @@ plugins {
     id "io.spring.dependency-management" version "1.1.0"
     id 'com.github.johnrengelman.shadow' version '7.1.2' apply false
 }
-
+def  guavaVersion = "31.1-jre"
 allprojects {
     group "org.otus"
 
@@ -10,7 +10,6 @@ allprojects {
         mavenLocal()
         mavenCentral()
     }
-    def guavaVersion = "31.1-jre"
     apply plugin: "io.spring.dependency-management"
     dependencyManagement {
         dependencies {
@@ -20,6 +19,7 @@ allprojects {
                 mavenBom "com.google.protobuf:protobuf-bom:3.21.12"
             }
             dependency "com.google.guava:guava:$guavaVersion"
+
         }
     }
 }
