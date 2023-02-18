@@ -1,5 +1,7 @@
 package homework;
 
+import homework.annotations.*;
+
 import java.lang.reflect.*;
 import java.util.*;
 
@@ -7,52 +9,61 @@ public class Executor {
     private static int testsPassed = 0;
     private static int testsFailed = 0;
     private static int tests_all = 0;
+    private boolean isTest;
+    private AnnotationCollector annotationCollector;
 
-    public <T> void executeTests(Class<T> clazz) throws NoSuchMethodException, InstantiationException, IllegalAccessException {
-        execBefore(clazz, TestContext.get(AnnotationsConst.BEFORE_ANNOTATION_ALIAS));
-        execTest(clazz, TestContext.get(AnnotationsConst.TEST_ANNOTATION_ALIAS));
-        execAfter(clazz, TestContext.get(AnnotationsConst.AFTER_ANNOTATION_ALIAS));
+    public Executor(String pathToTests) {
+        annotationCollector = new AnnotationCollector(pathToTests);
     }
 
-    private <T> void execTest(Class<T> clazz, List<Method> methods) throws NoSuchMethodException, InstantiationException, IllegalAccessException {
-        tests_all = methods.size();
-        for (Method method : methods) {
-            try {
-                method.invoke(clazz.getConstructor().newInstance());
-            } catch (InvocationTargetException e) {
-                if (e.getCause() instanceof AssertionError) {
-                    System.out.println("Test " + method.getName() + " failed: " + e.getCause().getMessage());
-                    testsFailed++;
-                } else {
-                    System.out.println("Test " + method.getName() + " broken: " + e.getCause().getMessage());
+    public void invokeMethods(Class clazz) throws NoSuchMethodException, InstantiationException, IllegalAccessException {
+        isTest = clazz.isAssignableFrom(Test.class);
+        Map<Class, List<Method>> annotatedMethods = annotationCollector.getAnnotatedMethods(clazz);
+        if (isTest) {
+            invokeTestsMethods(annotatedMethods);
+        } else {
+            invokeOther(annotatedMethods);
+        }
+    }
+
+    private void invokeTestsMethods(Map<Class, List<Method>> collectedMap) throws NoSuchMethodException, InstantiationException, IllegalAccessException {
+        for (Map.Entry<Class, List<Method>> entry : collectedMap.entrySet()) {
+            tests_all = entry.getValue().size() + tests_all;
+            Class clazz = entry.getKey();
+            for (Method method : entry.getValue()) {
+                try {
+                    method.invoke(clazz.getConstructor().newInstance());
+                } catch (InvocationTargetException e) {
+                    if (e.getCause() instanceof AssertionError) {
+                        System.out.println("Test " + method.getName() + " failed: " + e.getCause().getMessage());
+                        testsFailed++;
+                    } else {
+                        System.out.println("Test " + method.getName() + " broken: " + e.getCause().getMessage());
+                    }
+                    continue;
                 }
-                continue;
+                testsPassed++;
+                System.out.println("Test " + method.getName() + " passed!");
             }
-            testsPassed++;
-            System.out.println("Test " + method.getName() + " passed!");
+
         }
-        System.out.println("Tests all: " + tests_all);
-        System.out.println("Tests failed: " + testsFailed);
-        System.out.println("Tests passed: " + testsPassed);
+        System.out.println("Tests all :" + tests_all);
     }
 
-    private <T> void execBefore(Class<T> clazz, List<Method> methods) throws NoSuchMethodException, InstantiationException, IllegalAccessException {
-        for (Method method : methods) {
-            try {
-                method.invoke(clazz.getConstructor().newInstance());
-            } catch (InvocationTargetException e) {
-                System.out.println(method.getName() + "in Before scope failed");
-            }
-        }
-    }
+    private void invokeOther(Map<Class, List<Method>> collectedMap) throws NoSuchMethodException, InstantiationException, IllegalAccessException {
+        for (Map.Entry<Class, List<Method>> entry : collectedMap.entrySet()) {
+            Class clazz = entry.getKey();
+            for (Method method : entry.getValue()) {
+                try {
+                    method.invoke(clazz.getConstructor().newInstance());
+                } catch (InvocationTargetException e) {
+                    System.out.println("Problem occurred while method invocation : " + method.getName());
+                    continue;
+                }
 
-    private <T> void execAfter(Class<T> clazz, List<Method> methods) throws NoSuchMethodException, InstantiationException, IllegalAccessException {
-        for (Method method : methods) {
-            try {
-                method.invoke(clazz.getConstructor().newInstance());
-            } catch (InvocationTargetException e) {
-                System.out.println(method.getName() + "in After scope failed");
             }
+
         }
+
     }
 }

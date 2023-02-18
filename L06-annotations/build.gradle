@@ -10,6 +10,8 @@ dependencies {
     testImplementation ('org.junit.jupiter:junit-jupiter-engine')
     testImplementation ('org.mockito:mockito-junit-jupiter')
     implementation 'com.google.guava:guava'
+    implementation 'org.reflections:reflections:0.10.2'
+
 }
 
 test {
