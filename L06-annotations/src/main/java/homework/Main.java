@@ -1,13 +1,9 @@
 package homework;
 
-import homework.annotations.*;
-
 public class Main {
     public static void main(String[] args) throws NoSuchMethodException, InstantiationException, IllegalAccessException {
         Executor executor = new Executor("homework.tests");
-        executor.invokeMethods(Before.class);
-        executor.invokeMethods(Test.class);
-        executor.invokeMethods(After.class);
+        executor.execTests();
     }
 }
 

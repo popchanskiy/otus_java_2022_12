@@ -16,18 +16,17 @@ public class Executor {
         annotationCollector = new AnnotationCollector(pathToTests);
     }
 
-    public void invokeMethods(Class clazz) throws NoSuchMethodException, InstantiationException, IllegalAccessException {
-        isTest = clazz.isAssignableFrom(Test.class);
-        Map<Class, List<Method>> annotatedMethods = annotationCollector.getAnnotatedMethods(clazz);
-        if (isTest) {
-            invokeTestsMethods(annotatedMethods);
-        } else {
-            invokeOther(annotatedMethods);
-        }
+    public void execTests() throws NoSuchMethodException, InstantiationException, IllegalAccessException {
+        Map<Class, List<Method>> annotatedMethods = annotationCollector.getAnnotatedMethods(Test.class);
+        runTests(annotatedMethods);
     }
 
-    private void invokeTestsMethods(Map<Class, List<Method>> collectedMap) throws NoSuchMethodException, InstantiationException, IllegalAccessException {
+
+
+    private void runTests(Map<Class, List<Method>> collectedMap) throws NoSuchMethodException, InstantiationException, IllegalAccessException {
         for (Map.Entry<Class, List<Method>> entry : collectedMap.entrySet()) {
+            Map<Class, List<Method>> annotatedBefore = annotationCollector.getAnnotatedMethods(Before.class);
+            invokeMethods(annotatedBefore);
             tests_all = entry.getValue().size() + tests_all;
             Class clazz = entry.getKey();
             for (Method method : entry.getValue()) {
@@ -45,12 +44,13 @@ public class Executor {
                 testsPassed++;
                 System.out.println("Test " + method.getName() + " passed!");
             }
-
+            Map<Class, List<Method>> annotatedAfter = annotationCollector.getAnnotatedMethods(After.class);
+            invokeMethods(annotatedAfter);
         }
         System.out.println("Tests all :" + tests_all);
     }
 
-    private void invokeOther(Map<Class, List<Method>> collectedMap) throws NoSuchMethodException, InstantiationException, IllegalAccessException {
+    private void invokeMethods(Map<Class, List<Method>> collectedMap) throws NoSuchMethodException, InstantiationException, IllegalAccessException {
         for (Map.Entry<Class, List<Method>> entry : collectedMap.entrySet()) {
             Class clazz = entry.getKey();
             for (Method method : entry.getValue()) {

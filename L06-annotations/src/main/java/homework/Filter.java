@@ -12,9 +12,9 @@ public class Filter {
             for (Method method : currClass.getDeclaredMethods()) {
                 if (method.isAnnotationPresent(annotation)) {
                     methods.add(method);
+                    resultCollection.put(currClass, methods);
                 }
             }
-            resultCollection.put(currClass, methods);
         }
         return resultCollection;
     }
