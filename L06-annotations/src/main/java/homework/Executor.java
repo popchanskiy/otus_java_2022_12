@@ -26,26 +26,29 @@ public class Executor {
     private void runTests(Map<Class, List<Method>> collectedMap) throws NoSuchMethodException, InstantiationException, IllegalAccessException {
         for (Map.Entry<Class, List<Method>> entry : collectedMap.entrySet()) {
             Map<Class, List<Method>> annotatedBefore = annotationCollector.getAnnotatedMethods(Before.class);
-            invokeMethods(annotatedBefore);
+            Map<Class, List<Method>> annotatedAfter = annotationCollector.getAnnotatedMethods(After.class);
             tests_all = entry.getValue().size() + tests_all;
             Class clazz = entry.getKey();
             for (Method method : entry.getValue()) {
                 try {
+                    invokeMethods(annotatedBefore);
                     method.invoke(clazz.getConstructor().newInstance());
                 } catch (InvocationTargetException e) {
                     if (e.getCause() instanceof AssertionError) {
                         System.out.println("Test " + method.getName() + " failed: " + e.getCause().getMessage());
                         testsFailed++;
+
                     } else {
                         System.out.println("Test " + method.getName() + " broken: " + e.getCause().getMessage());
+                        invokeMethods(annotatedAfter);
                     }
                     continue;
                 }
                 testsPassed++;
                 System.out.println("Test " + method.getName() + " passed!");
+                invokeMethods(annotatedAfter);
             }
-            Map<Class, List<Method>> annotatedAfter = annotationCollector.getAnnotatedMethods(After.class);
-            invokeMethods(annotatedAfter);
+
         }
         System.out.println("Tests all :" + tests_all);
     }
